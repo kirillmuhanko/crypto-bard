@@ -9,11 +9,13 @@ public interface IChatIdRepository
 
 public class ChatIdRepository : IChatIdRepository
 {
-    private const string ChatIdFilePath = "ChatIds.txt";
+    private const string ChatIdFileName = "ChatIds.txt";
+    private readonly string _chatIdFilePath;
     private readonly List<long> _chatIds;
 
     public ChatIdRepository()
     {
+        _chatIdFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ChatIdFileName);
         _chatIds = LoadChatIdsFromFile();
     }
 
@@ -36,19 +38,19 @@ public class ChatIdRepository : IChatIdRepository
         return _chatIds.ToList();
     }
 
-    private static List<long> LoadChatIdsFromFile()
+    private List<long> LoadChatIdsFromFile()
     {
-        if (File.Exists(ChatIdFilePath))
+        if (File.Exists(_chatIdFilePath))
         {
-            var lines = File.ReadAllLines(ChatIdFilePath);
+            var lines = File.ReadAllLines(_chatIdFilePath);
             return lines.Select(long.Parse).ToList();
         }
 
         return new List<long>();
     }
 
-    private static void AppendChatIdToFile(long chatId)
+    private void AppendChatIdToFile(long chatId)
     {
-        File.AppendAllText(ChatIdFilePath, $"{chatId}{Environment.NewLine}");
+        File.AppendAllText(_chatIdFilePath, $"{chatId}{Environment.NewLine}");
     }
 }
