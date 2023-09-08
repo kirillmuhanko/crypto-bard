@@ -1,0 +1,94 @@
+using CryptoBardWorkerService.Detectors;
+using CryptoBardWorkerService.Notifiers;
+using CryptoBardWorkerService.Repositories;
+using CryptoBardWorkerService.Services;
+using CryptoBardWorkerService.Validators;
+
+namespace CryptoBardWorkerService;
+
+public class Worker : BackgroundService
+{
+    private readonly IBotNotifier _botNotifier;
+    private readonly IChatIdRepository _chatIdRepository;
+    private readonly ICryptoService _cryptoService;
+    private readonly IDateChangeDetector _dateChangeDetector;
+    private readonly IInternetConnectionValidator _internetConnectionValidator;
+    private readonly ILogger<Worker> _logger;
+    private readonly IPriceChangeRepository _priceChangeRepository;
+
+    public Worker(
+        IBotNotifier botNotifier, 
+        IChatIdRepository chatIdRepository, 
+        ICryptoService cryptoService, 
+        IDateChangeDetector dateChangeDetector,
+        IInternetConnectionValidator internetConnectionValidator, 
+        ILogger<Worker> logger, 
+        IPriceChangeRepository priceChangeRepository)
+    {
+        _botNotifier = botNotifier;
+        _chatIdRepository = chatIdRepository;
+        _cryptoService = cryptoService;
+        _dateChangeDetector = dateChangeDetector;
+        _internetConnectionValidator = internetConnectionValidator;
+        _logger = logger;
+        _priceChangeRepository = priceChangeRepository;
+
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _logger.LogInformation("Crypto Bard has awakened! Initiating the cryptocurrency price monitoring...");
+
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                if (!await _internetConnectionValidator.CheckInternetConnectionAsync())
+                    continue;
+
+                await ProcessAsync(stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred.");
+            }
+
+            _logger.LogInformation("Crypto Bard takes a rest, awaiting the next melody...");
+            await Task.Delay(TimeSpan.FromMinutes(15), stoppingToken);
+        }
+    }
+
+    private async Task ProcessAsync(CancellationToken cancellationToken)
+    {
+        if (_dateChangeDetector.HasDateChanged())
+        {
+            _logger.LogInformation("A new day has begun! Resetting the dictionary...");
+            _priceChangeRepository.ClearAll();
+        }
+
+        var models = await _cryptoService.GetCryptocurrencyDataAsync();
+
+        foreach (var model in models)
+        {
+            var lastPriceChangePercentage = _priceChangeRepository.GetLastPriceChangePercentage(model.Symbol);
+
+            if (model.PriceChangePercent >= 20 && model.PriceChangePercent > lastPriceChangePercentage)
+            {
+                await _botNotifier.SendToChatIdsAsync(
+                    _chatIdRepository.GetAllChatIds(),
+                    $"{model.Symbol} has risen by {model.PriceChangePercent:F2}% in the last 24 hours!", 
+                    cancellationToken);
+
+                _priceChangeRepository.UpdateLastPriceChangePercentage(model.Symbol, model.PriceChangePercent);
+
+                _logger.LogInformation(
+                    $"{model.Symbol} has witnessed a significant increase of {model.PriceChangePercent:F2}% in the past day!");
+            }
+            else
+            {
+                _logger.LogInformation(
+                    $"{model.Symbol} price change: {model.PriceChangePercent:F2}% - No message sent.");
+            }
+        }
+    }
+}
