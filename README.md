@@ -1,12 +1,14 @@
 # Setting the Telegram Bot Token for CryptoBardWorkerService
 
-In order to run CryptoBardWorkerService, you need to set the Telegram Bot Token as an environment variable. Here are the steps to do it:
+To run CryptoBardWorkerService, follow these simple steps to set your Telegram Bot Token as a system-level environment variable:
 
 1. Open a Command Prompt window.
 
-2. Use the `setx` command to set the environment variable `CryptoBard_Telegram__BotToken` to your Telegram Bot Token. Replace `"YOUR_BOT_TOKEN"` with your actual Telegram Bot Token.
+2. Use this command, replacing `"YOUR_BOT_TOKEN"` with your actual Telegram Bot Token:
 
    ```bash
-   setx CryptoBard_Telegram__BotToken "YOUR_BOT_TOKEN"
+   setx CryptoBard_Telegram__BotToken "YOUR_BOT_TOKEN" /M
 
-3. Restart your Integrated Development Environment (IDE) to apply the changes.
+3. Restart your IDE (Integrated Development Environment) to apply the changes.
+
+That's it! Now your CryptoBardWorkerService can access the Telegram Bot Token.
