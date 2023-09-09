@@ -1,3 +1,5 @@
+using CryptoBardWorkerService.Helpers;
+
 namespace CryptoBardWorkerService.Repositories;
 
 public interface IChatIdRepository
@@ -9,13 +11,12 @@ public interface IChatIdRepository
 
 public class ChatIdRepository : IChatIdRepository
 {
-    private const string ChatIdFileName = "ChatIds.txt";
     private readonly string _chatIdFilePath;
     private readonly List<long> _chatIds;
 
     public ChatIdRepository()
     {
-        _chatIdFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ChatIdFileName);
+        _chatIdFilePath = FilePathHelper.CombineWithBaseDirectory("ChatIds.txt");
         _chatIds = LoadChatIdsFromFile();
     }
 
@@ -26,11 +27,11 @@ public class ChatIdRepository : IChatIdRepository
 
     public void SaveChatId(long chatId)
     {
-        if (IsChatIdNew(chatId))
-        {
-            _chatIds.Add(chatId);
-            AppendChatIdToFile(chatId);
-        }
+        if (!IsChatIdNew(chatId))
+            return;
+
+        _chatIds.Add(chatId);
+        AppendChatIdToFile(chatId);
     }
 
     public IEnumerable<long> GetAllChatIds()
@@ -40,13 +41,11 @@ public class ChatIdRepository : IChatIdRepository
 
     private List<long> LoadChatIdsFromFile()
     {
-        if (File.Exists(_chatIdFilePath))
-        {
-            var lines = File.ReadAllLines(_chatIdFilePath);
-            return lines.Select(long.Parse).ToList();
-        }
+        if (!File.Exists(_chatIdFilePath))
+            return new List<long>();
 
-        return new List<long>();
+        var lines = File.ReadAllLines(_chatIdFilePath);
+        return lines.Select(long.Parse).ToList();
     }
 
     private void AppendChatIdToFile(long chatId)
