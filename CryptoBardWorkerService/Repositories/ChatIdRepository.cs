@@ -12,7 +12,7 @@ public interface IChatIdRepository
 public class ChatIdRepository : IChatIdRepository
 {
     private readonly string _chatIdFilePath;
-    private readonly List<long> _chatIds;
+    private readonly IList<long> _chatIds;
 
     public ChatIdRepository()
     {
@@ -36,10 +36,10 @@ public class ChatIdRepository : IChatIdRepository
 
     public IEnumerable<long> GetAllChatIds()
     {
-        return _chatIds.ToList();
+        return _chatIds;
     }
 
-    private List<long> LoadChatIdsFromFile()
+    private IList<long> LoadChatIdsFromFile()
     {
         if (!File.Exists(_chatIdFilePath))
             return new List<long>();

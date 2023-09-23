@@ -9,7 +9,6 @@ namespace CryptoBardWorkerService;
 public class Worker : BackgroundService
 {
     private readonly IBotNotifier _botNotifier;
-    private readonly IChatIdRepository _chatIdRepository;
     private readonly ICryptoService _cryptoService;
     private readonly IDateChangeDetector _dateChangeDetector;
     private readonly IInternetConnectionValidator _internetConnectionValidator;
@@ -18,7 +17,6 @@ public class Worker : BackgroundService
 
     public Worker(
         IBotNotifier botNotifier, 
-        IChatIdRepository chatIdRepository, 
         ICryptoService cryptoService, 
         IDateChangeDetector dateChangeDetector,
         IInternetConnectionValidator internetConnectionValidator, 
@@ -26,7 +24,6 @@ public class Worker : BackgroundService
         IPriceChangeRepository priceChangeRepository)
     {
         _botNotifier = botNotifier;
-        _chatIdRepository = chatIdRepository;
         _cryptoService = cryptoService;
         _dateChangeDetector = dateChangeDetector;
         _internetConnectionValidator = internetConnectionValidator;
@@ -74,11 +71,7 @@ public class Worker : BackgroundService
 
             if (model.PriceChangePercent >= 20 && model.PriceChangePercent > lastPriceChangePercentage)
             {
-                await _botNotifier.SendToChatIdsAsync(
-                    _chatIdRepository.GetAllChatIds(),
-                    $"{model.Symbol} has risen by {model.PriceChangePercent:F2}% in the last 24 hours!", 
-                    cancellationToken);
-
+                await _botNotifier.NotifyAsync($"{model.Symbol} {model.PriceChangePercent:F2}%", cancellationToken);
                 _priceChangeRepository.UpdateLastPriceChangePercentage(model.Symbol, model.PriceChangePercent);
 
                 _logger.LogInformation(

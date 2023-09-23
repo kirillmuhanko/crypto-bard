@@ -1,24 +1,36 @@
+using CryptoBardWorkerService.Repositories;
+using Microsoft.Toolkit.Uwp.Notifications;
 using Telegram.Bot;
 
 namespace CryptoBardWorkerService.Notifiers;
 
 public interface IBotNotifier
 {
-    Task SendToChatIdsAsync(IEnumerable<long> chatIds, string message, CancellationToken cancellationToken = default);
+    Task NotifyAsync(string text, CancellationToken cancellationToken = default);
 }
 
 public class BotNotifier : IBotNotifier
 {
+    private readonly IChatIdRepository _chatIdRepository;
     private readonly ITelegramBotClient _telegramBotClient;
 
-    public BotNotifier(ITelegramBotClient telegramBotClient)
+    public BotNotifier(
+        IChatIdRepository chatIdRepository, 
+        ITelegramBotClient telegramBotClient)
     {
+        _chatIdRepository = chatIdRepository;
         _telegramBotClient = telegramBotClient;
     }
 
-    public async Task SendToChatIdsAsync(IEnumerable<long> chatIds, string message, CancellationToken cancellationToken = default)
+    public async Task NotifyAsync(string text, CancellationToken cancellationToken = default)
     {
-        var tasks = chatIds.Select(chatId => SendToChatIdAsync(chatId, message, cancellationToken));
+        new ToastContentBuilder()
+            .AddText(nameof(BotNotifier))
+            .AddText(text)
+            .Show();
+
+        var chatIds = _chatIdRepository.GetAllChatIds();
+        var tasks = chatIds.Select(chatId => SendToChatIdAsync(chatId, text, cancellationToken));
         await Task.WhenAll(tasks);
     }
 
