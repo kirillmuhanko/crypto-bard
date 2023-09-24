@@ -12,9 +12,9 @@ using Telegram.Bot;
 
 namespace CryptoBardWorkerService.IoC;
 
-public static class ServiceRegistrationExtensions
+public static class ServiceCollectionExtensions
 {
-    public static void AddAppServices(this IServiceCollection services, IConfiguration configuration)
+    public static void AddCustomServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<BinanceOptions>(configuration.GetSection("Binance"));
         services.Configure<TelegramOptions>(configuration.GetSection("Telegram"));
@@ -45,5 +45,6 @@ public static class ServiceRegistrationExtensions
         services.AddSingleton<IDateChangeDetector, DateChangeDetector>();
         services.AddSingleton<IInternetConnectionValidator, InternetConnectionValidator>();
         services.AddSingleton<IPriceChangeRepository, PriceChangeRepository>();
+        services.AddSingleton<IWindowsNotifier, WindowsNotifier>();
     }
 }

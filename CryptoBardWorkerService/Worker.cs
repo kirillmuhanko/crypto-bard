@@ -14,14 +14,16 @@ public class Worker : BackgroundService
     private readonly IInternetConnectionValidator _internetConnectionValidator;
     private readonly ILogger<Worker> _logger;
     private readonly IPriceChangeRepository _priceChangeRepository;
+    private readonly IWindowsNotifier _windowsNotifier;
 
     public Worker(
-        IBotNotifier botNotifier, 
-        ICryptoService cryptoService, 
+        IBotNotifier botNotifier,
+        ICryptoService cryptoService,
         IDateChangeDetector dateChangeDetector,
-        IInternetConnectionValidator internetConnectionValidator, 
-        ILogger<Worker> logger, 
-        IPriceChangeRepository priceChangeRepository)
+        IInternetConnectionValidator internetConnectionValidator,
+        ILogger<Worker> logger,
+        IPriceChangeRepository priceChangeRepository, 
+        IWindowsNotifier windowsNotifier)
     {
         _botNotifier = botNotifier;
         _cryptoService = cryptoService;
@@ -29,7 +31,7 @@ public class Worker : BackgroundService
         _internetConnectionValidator = internetConnectionValidator;
         _logger = logger;
         _priceChangeRepository = priceChangeRepository;
-
+        _windowsNotifier = windowsNotifier;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -71,7 +73,9 @@ public class Worker : BackgroundService
 
             if (model.PriceChangePercent >= 20 && model.PriceChangePercent > lastPriceChangePercentage)
             {
-                await _botNotifier.NotifyAsync($"{model.Symbol} {model.PriceChangePercent:F2}%", cancellationToken);
+                var message = $"{model.Symbol} {model.PriceChangePercent:F2}%";
+                await _botNotifier.NotifyAsync(message, cancellationToken);
+                _windowsNotifier.ShowNotification(message);
                 _priceChangeRepository.UpdateLastPriceChangePercentage(model.Symbol, model.PriceChangePercent);
 
                 _logger.LogInformation(

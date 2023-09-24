@@ -1,5 +1,4 @@
 using CryptoBardWorkerService.Repositories;
-using Microsoft.Toolkit.Uwp.Notifications;
 using Telegram.Bot;
 
 namespace CryptoBardWorkerService.Notifiers;
@@ -24,11 +23,6 @@ public class BotNotifier : IBotNotifier
 
     public async Task NotifyAsync(string text, CancellationToken cancellationToken = default)
     {
-        new ToastContentBuilder()
-            .AddText(nameof(BotNotifier))
-            .AddText(text)
-            .Show();
-
         var chatIds = _chatIdRepository.GetAllChatIds();
         var tasks = chatIds.Select(chatId => SendToChatIdAsync(chatId, text, cancellationToken));
         await Task.WhenAll(tasks);

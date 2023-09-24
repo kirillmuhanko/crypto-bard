@@ -1,8 +1,6 @@
 using CryptoBardWorkerService;
-using CryptoBardWorkerService.Helpers;
 using CryptoBardWorkerService.IoC;
 using Serilog;
-using Serilog.Events;
 
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureAppConfiguration((hostContext, configBuilder) =>
@@ -13,23 +11,12 @@ var host = Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices((hostContext, services) =>
     {
-        services.AddAppServices(hostContext.Configuration);
+        services.AddCustomServices(hostContext.Configuration);
         services.AddHostedService<Worker>();
     })
     .ConfigureLogging((_, loggingBuilder) =>
     {
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-            .Enrich.FromLogContext()
-            .WriteTo.File(
-                FilePathHelper.CombineWithBaseDirectory("logs/log-.txt"),
-                rollingInterval: RollingInterval.Day,
-                retainedFileCountLimit: 7,
-                fileSizeLimitBytes: 1024 * 1024 * 10) // 10 MB file size limit
-            .CreateLogger();
-
-        //loggingBuilder.AddSerilog();
+        loggingBuilder.AddCustomSerilog();
     })
     .UseWindowsService()
     .Build();
