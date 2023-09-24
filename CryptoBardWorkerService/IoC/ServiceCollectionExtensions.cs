@@ -16,13 +16,12 @@ public static class ServiceCollectionExtensions
 {
     public static void AddCustomServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<BinanceOptions>(configuration.GetSection("Binance"));
-        services.Configure<TelegramOptions>(configuration.GetSection("Telegram"));
+        services.Configure<GlobalOptions>(configuration.GetSection(GlobalOptions.SectionName));
 
         services.AddSingleton<ITelegramBotClient>(provider =>
         {
-            var options = provider.GetRequiredService<IOptions<TelegramOptions>>().Value;
-            var botClient = new TelegramBotClient(options.BotToken);
+            var options = provider.GetRequiredService<IOptions<GlobalOptions>>().Value;
+            var botClient = new TelegramBotClient(options.TelegramBotToken);
             var commandHandler = provider.GetRequiredService<ICommandHandler>();
 
             botClient.StartReceiving(
@@ -38,10 +37,10 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<IBotCommand, CommandPing>();
         services.AddSingleton<IBotCommand, CommandStart>();
-        services.AddSingleton<IBotNotifier, BotNotifier>();
+        services.AddSingleton<ITelegramNotifier, TelegramNotifier>();
         services.AddSingleton<IChatIdRepository, ChatIdRepository>();
         services.AddSingleton<ICommandHandler, CommandHandler>();
-        services.AddSingleton<ICryptoService, CryptoService>();
+        services.AddSingleton<ICryptocurrencyDataService, CryptocurrencyDataService>();
         services.AddSingleton<IDateChangeDetector, DateChangeDetector>();
         services.AddSingleton<IInternetConnectionValidator, InternetConnectionValidator>();
         services.AddSingleton<IPriceChangeRepository, PriceChangeRepository>();

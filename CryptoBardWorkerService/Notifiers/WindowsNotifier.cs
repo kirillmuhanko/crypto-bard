@@ -4,7 +4,7 @@ namespace CryptoBardWorkerService.Notifiers;
 
 public interface IWindowsNotifier
 {
-    void ShowNotification(string text);
+    void Notify(string message);
 }
 
 public class WindowsNotifier : IWindowsNotifier
@@ -16,18 +16,18 @@ public class WindowsNotifier : IWindowsNotifier
         _logger = logger;
     }
 
-    public void ShowNotification(string text)
+    public void Notify(string message)
     {
         try
         {
             new ToastContentBuilder()
                 .AddText(nameof(WindowsNotifier))
-                .AddText(text)
+                .AddText(message)
                 .Show();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in ShowNotification");
+            _logger.LogError(ex, "Error in Notify");
         }
     }
 }

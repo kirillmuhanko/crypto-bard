@@ -3,28 +3,28 @@ using Telegram.Bot;
 
 namespace CryptoBardWorkerService.Notifiers;
 
-public interface IBotNotifier
+public interface ITelegramNotifier
 {
-    Task NotifyAsync(string text, CancellationToken cancellationToken = default);
+    Task SendToAllChatIdsAsync(string text, CancellationToken cancellationToken = default);
 }
 
-public class BotNotifier : IBotNotifier
+public class TelegramNotifier : ITelegramNotifier
 {
     private readonly IChatIdRepository _chatIdRepository;
     private readonly ITelegramBotClient _telegramBotClient;
 
-    public BotNotifier(
-        IChatIdRepository chatIdRepository, 
+    public TelegramNotifier(
+        IChatIdRepository chatIdRepository,
         ITelegramBotClient telegramBotClient)
     {
         _chatIdRepository = chatIdRepository;
         _telegramBotClient = telegramBotClient;
     }
 
-    public async Task NotifyAsync(string text, CancellationToken cancellationToken = default)
+    public async Task SendToAllChatIdsAsync(string message, CancellationToken cancellationToken = default)
     {
         var chatIds = _chatIdRepository.GetAllChatIds();
-        var tasks = chatIds.Select(chatId => SendToChatIdAsync(chatId, text, cancellationToken));
+        var tasks = chatIds.Select(chatId => SendToChatIdAsync(chatId, message, cancellationToken));
         await Task.WhenAll(tasks);
     }
 

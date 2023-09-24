@@ -1,36 +1,41 @@
 using CryptoBardWorkerService.Detectors;
 using CryptoBardWorkerService.Notifiers;
+using CryptoBardWorkerService.Options;
 using CryptoBardWorkerService.Repositories;
 using CryptoBardWorkerService.Services;
 using CryptoBardWorkerService.Validators;
+using Microsoft.Extensions.Options;
 
 namespace CryptoBardWorkerService;
 
 public class Worker : BackgroundService
 {
-    private readonly IBotNotifier _botNotifier;
-    private readonly ICryptoService _cryptoService;
+    private readonly ICryptocurrencyDataService _cryptocurrencyDataService;
     private readonly IDateChangeDetector _dateChangeDetector;
     private readonly IInternetConnectionValidator _internetConnectionValidator;
     private readonly ILogger<Worker> _logger;
+    private readonly IOptions<GlobalOptions> _options;
     private readonly IPriceChangeRepository _priceChangeRepository;
+    private readonly ITelegramNotifier _telegramNotifier;
     private readonly IWindowsNotifier _windowsNotifier;
 
     public Worker(
-        IBotNotifier botNotifier,
-        ICryptoService cryptoService,
+        ICryptocurrencyDataService cryptocurrencyDataService,
         IDateChangeDetector dateChangeDetector,
         IInternetConnectionValidator internetConnectionValidator,
         ILogger<Worker> logger,
-        IPriceChangeRepository priceChangeRepository, 
+        IOptions<GlobalOptions> options,
+        IPriceChangeRepository priceChangeRepository,
+        ITelegramNotifier telegramNotifier,
         IWindowsNotifier windowsNotifier)
     {
-        _botNotifier = botNotifier;
-        _cryptoService = cryptoService;
+        _cryptocurrencyDataService = cryptocurrencyDataService;
         _dateChangeDetector = dateChangeDetector;
         _internetConnectionValidator = internetConnectionValidator;
         _logger = logger;
+        _options = options;
         _priceChangeRepository = priceChangeRepository;
+        _telegramNotifier = telegramNotifier;
         _windowsNotifier = windowsNotifier;
     }
 
@@ -65,17 +70,18 @@ public class Worker : BackgroundService
             _priceChangeRepository.ClearAll();
         }
 
-        var models = await _cryptoService.GetCryptocurrencyDataAsync();
+        var models = await _cryptocurrencyDataService.GetCryptocurrencyDataAsync();
 
         foreach (var model in models)
         {
             var lastPriceChangePercentage = _priceChangeRepository.GetLastPriceChangePercentage(model.Symbol);
 
-            if (model.PriceChangePercent >= 20 && model.PriceChangePercent > lastPriceChangePercentage)
+            if (model.PriceChangePercent >= _options.Value.PriceChangedPercent &&
+                model.PriceChangePercent > lastPriceChangePercentage)
             {
-                var message = $"{model.Symbol} {model.PriceChangePercent:F2}%";
-                await _botNotifier.NotifyAsync(message, cancellationToken);
-                _windowsNotifier.ShowNotification(message);
+                var message = $"{model.Symbol} has risen by {model.PriceChangePercent:F2}% in the last 24 hours!";
+                await _telegramNotifier.SendToAllChatIdsAsync(message, cancellationToken);
+                _windowsNotifier.Notify(message);
                 _priceChangeRepository.UpdateLastPriceChangePercentage(model.Symbol, model.PriceChangePercent);
 
                 _logger.LogInformation(
