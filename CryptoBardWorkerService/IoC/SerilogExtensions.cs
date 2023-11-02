@@ -14,8 +14,8 @@ public static class SerilogExtensions
     public static ILoggingBuilder AddCustomSerilog(this ILoggingBuilder loggingBuilder)
     {
         Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Error()
-            .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
+            .MinimumLevel.Information()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
             .Enrich.FromLogContext()
             .WriteTo.File(
                 FilePathHelper.CombineWithBaseDirectory(LogFilePath),

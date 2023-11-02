@@ -1,5 +1,4 @@
 using CryptoBardWorkerService.Detectors;
-using CryptoBardWorkerService.Notifiers;
 using CryptoBardWorkerService.Options;
 using CryptoBardWorkerService.Repositories;
 using CryptoBardWorkerService.Services;
@@ -14,29 +13,27 @@ public class Worker : BackgroundService
     private readonly IDateChangeDetector _dateChangeDetector;
     private readonly IInternetConnectionValidator _internetConnectionValidator;
     private readonly ILogger<Worker> _logger;
+    private readonly INotificationService _notificationService;
     private readonly IOptions<GlobalOptions> _options;
     private readonly IPriceChangeRepository _priceChangeRepository;
-    private readonly ITelegramNotifier _telegramNotifier;
-    private readonly IWindowsNotifier _windowsNotifier;
 
     public Worker(
         ICryptocurrencyDataService cryptocurrencyDataService,
         IDateChangeDetector dateChangeDetector,
         IInternetConnectionValidator internetConnectionValidator,
         ILogger<Worker> logger,
+        INotificationService notificationService,
         IOptions<GlobalOptions> options,
-        IPriceChangeRepository priceChangeRepository,
-        ITelegramNotifier telegramNotifier,
-        IWindowsNotifier windowsNotifier)
+        IPriceChangeRepository priceChangeRepository)
     {
         _cryptocurrencyDataService = cryptocurrencyDataService;
         _dateChangeDetector = dateChangeDetector;
         _internetConnectionValidator = internetConnectionValidator;
         _logger = logger;
         _options = options;
+        _notificationService = notificationService;
         _priceChangeRepository = priceChangeRepository;
-        _telegramNotifier = telegramNotifier;
-        _windowsNotifier = windowsNotifier;
+        _notificationService = notificationService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -50,7 +47,7 @@ public class Worker : BackgroundService
                 if (!await _internetConnectionValidator.CheckInternetConnectionAsync())
                     continue;
 
-                await ProcessAsync(stoppingToken);
+                await ProcessAsync();
             }
             catch (Exception ex)
             {
@@ -62,7 +59,7 @@ public class Worker : BackgroundService
         }
     }
 
-    private async Task ProcessAsync(CancellationToken cancellationToken)
+    private async Task ProcessAsync()
     {
         if (_dateChangeDetector.HasDateChanged())
         {
@@ -75,13 +72,12 @@ public class Worker : BackgroundService
         foreach (var model in models)
         {
             var lastPriceChangePercentage = _priceChangeRepository.GetLastPriceChangePercentage(model.Symbol);
+            var percentDifference = model.PriceChangePercent - lastPriceChangePercentage;
 
-            if (model.PriceChangePercent >= _options.Value.PriceChangedPercent &&
-                model.PriceChangePercent > lastPriceChangePercentage)
+            if (model.PriceChangePercent >= _options.Value.PriceChangedPercent && percentDifference > 1m)
             {
                 var message = $"{model.Symbol} has risen by {model.PriceChangePercent:F2}% in the last 24 hours!";
-                await _telegramNotifier.SendToAllChatIdsAsync(message, cancellationToken);
-                _windowsNotifier.Notify(message);
+                await _notificationService.Notify(message);
                 _priceChangeRepository.UpdateLastPriceChangePercentage(model.Symbol, model.PriceChangePercent);
 
                 _logger.LogInformation(

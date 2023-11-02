@@ -2,7 +2,6 @@ using CryptoBardWorkerService.Commands;
 using CryptoBardWorkerService.Detectors;
 using CryptoBardWorkerService.Handlers;
 using CryptoBardWorkerService.Interfaces;
-using CryptoBardWorkerService.Notifiers;
 using CryptoBardWorkerService.Options;
 using CryptoBardWorkerService.Repositories;
 using CryptoBardWorkerService.Services;
@@ -37,13 +36,12 @@ public static class ServiceCollectionExtensions
 
         services.AddSingleton<IBotCommand, CommandPing>();
         services.AddSingleton<IBotCommand, CommandStart>();
-        services.AddSingleton<ITelegramNotifier, TelegramNotifier>();
         services.AddSingleton<IChatIdRepository, ChatIdRepository>();
         services.AddSingleton<ICommandHandler, CommandHandler>();
         services.AddSingleton<ICryptocurrencyDataService, CryptocurrencyDataService>();
         services.AddSingleton<IDateChangeDetector, DateChangeDetector>();
         services.AddSingleton<IInternetConnectionValidator, InternetConnectionValidator>();
         services.AddSingleton<IPriceChangeRepository, PriceChangeRepository>();
-        services.AddSingleton<IWindowsNotifier, WindowsNotifier>();
+        services.AddSingleton<INotificationService, NotificationService>();
     }
 }
