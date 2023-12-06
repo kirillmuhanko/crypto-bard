@@ -3,6 +3,7 @@ using CryptoBardWorkerService.IoC;
 using Serilog;
 
 var host = Host.CreateDefaultBuilder(args)
+    .UseSerilogWithConfiguration()
     .ConfigureAppConfiguration((hostContext, configBuilder) =>
     {
         configBuilder.SetBasePath(hostContext.HostingEnvironment.ContentRootPath)
@@ -13,10 +14,6 @@ var host = Host.CreateDefaultBuilder(args)
     {
         services.AddCustomServices(hostContext.Configuration);
         services.AddHostedService<Worker>();
-    })
-    .ConfigureLogging((_, loggingBuilder) =>
-    {
-        loggingBuilder.AddCustomSerilog();
     })
     .UseWindowsService()
     .Build();
