@@ -7,4 +7,6 @@ public interface IPriceChangeRepository
     void UpdateLastPriceChangePercentage(string symbol, decimal priceChangePercentage);
 
     void ClearAll();
+
+    bool IsPriceChanged(string symbol, decimal priceChangePercent);
 }
