@@ -1,6 +1,6 @@
 namespace CryptoBardWorkerService.Models;
 
-public class CryptoTicker24HrModel
+public class CryptoTicker24HrResponseModel
 {
     public string Symbol { get; set; } = null!;
 

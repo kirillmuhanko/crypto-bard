@@ -18,9 +18,9 @@ public class CryptoService : ICryptoService
         _options = options;
     }
 
-    public async Task<List<CryptoTicker24HrModel>> GetCryptocurrencyDataAsync()
+    public async Task<List<CryptoTicker24HrResponseModel>> GetCryptocurrencyDataAsync()
     {
-        var cryptoDataList = new List<CryptoTicker24HrModel>();
+        var cryptoDataList = new List<CryptoTicker24HrResponseModel>();
         using var client = new HttpClient();
 
         foreach (var symbol in _options.Value.Cryptocurrencies)
@@ -32,7 +32,7 @@ public class CryptoService : ICryptoService
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    var data = JsonConvert.DeserializeObject<CryptoTicker24HrModel>(json);
+                    var data = JsonConvert.DeserializeObject<CryptoTicker24HrResponseModel>(json);
 
                     if (data != null)
                         cryptoDataList.Add(data);

@@ -73,7 +73,7 @@ public class Worker : BackgroundService
             var lastPriceChangePercentage = _priceChangeRepository.GetLastPriceChangePercentage(model.Symbol);
             var percentDifference = model.PriceChangePercent - lastPriceChangePercentage;
 
-            if (model.PriceChangePercent >= _options.Value.PriceChangedPercent && percentDifference > 4m)
+            if (model.PriceChangePercent >= _options.Value.PriceChangedPercent && percentDifference > _options.Value.MinPercentDifferenceForNotification)
             {
                 var message = $"{model.Symbol} has risen by {model.PriceChangePercent:F2}% in the last 24 hours!";
                 await _notificationService.Notify(message);

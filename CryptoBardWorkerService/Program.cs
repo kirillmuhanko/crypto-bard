@@ -8,7 +8,6 @@ using CryptoBardWorkerService.Repositories.Interfaces;
 using CryptoBardWorkerService.Services;
 using CryptoBardWorkerService.Services.Interfaces;
 using CryptoBardWorkerService.Workers;
-using Microsoft.Extensions.Options;
 using Serilog;
 using Telegram.Bot;
 
@@ -23,11 +22,16 @@ var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
         services.AddHostedService<Worker>();
-        services.Configure<CryptoAnalysisOptions>(hostContext.Configuration.GetSection(CryptoAnalysisOptions.ConfigurationSectionName));
+
+        services
+            .AddOptions<CryptoAnalysisOptions>()
+            .Bind(hostContext.Configuration.GetSection(CryptoAnalysisOptions.ConfigurationSectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         services.AddSingleton<ITelegramBotClient>(provider =>
         {
-            var options = provider.GetRequiredService<IOptions<CryptoAnalysisOptions>>().Value;
+            var options = hostContext.Configuration.GetSection(CryptoAnalysisOptions.ConfigurationSectionName).Get<CryptoAnalysisOptions>();
             var botClient = new TelegramBotClient(options.TelegramBotToken);
             var commandHandler = provider.GetRequiredService<ICommandHandler>();
 
