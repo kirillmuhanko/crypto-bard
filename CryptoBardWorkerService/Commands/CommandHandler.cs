@@ -1,13 +1,8 @@
-using CryptoBardWorkerService.Interfaces;
+using CryptoBardWorkerService.Commands.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace CryptoBardWorkerService.Handlers;
-
-public interface ICommandHandler
-{
-    Task HandleCommandAsync(ITelegramBotClient botClient, Message message);
-}
+namespace CryptoBardWorkerService.Commands;
 
 public class CommandHandler : ICommandHandler
 {

@@ -1,26 +1,22 @@
-using CryptoBardWorkerService.Repositories;
+using CryptoBardWorkerService.Repositories.Interfaces;
+using CryptoBardWorkerService.Services.Interfaces;
 using Microsoft.Toolkit.Uwp.Notifications;
 using Telegram.Bot;
 
 namespace CryptoBardWorkerService.Services;
 
-public interface INotificationService
-{
-    Task Notify(string message);
-}
-
 public class NotificationService : INotificationService
 {
-    private readonly IChatIdRepository _chatIdRepository;
+    private readonly IChatRepository _chatRepository;
     private readonly ILogger<NotificationService> _logger;
     private readonly ITelegramBotClient _telegramBotClient;
 
     public NotificationService(
-        IChatIdRepository chatIdRepository,
+        IChatRepository chatRepository,
         ILogger<NotificationService> logger,
         ITelegramBotClient telegramBotClient)
     {
-        _chatIdRepository = chatIdRepository;
+        _chatRepository = chatRepository;
         _logger = logger;
         _telegramBotClient = telegramBotClient;
     }
@@ -56,9 +52,9 @@ public class NotificationService : INotificationService
 
     private async Task NotifyUsersInTelegram(string message)
     {
-        var chatIds = _chatIdRepository.GetAllChatIds();
+        var chatListModel = await _chatRepository.LoadChatListModelAsync();
 
-        foreach (var chatId in chatIds)
-            await _telegramBotClient.SendTextMessageAsync(chatId, message, cancellationToken: default);
+        foreach (var chatModel in chatListModel.Chats)
+            await _telegramBotClient.SendTextMessageAsync(chatModel.ChatId, message, cancellationToken: default);
     }
 }

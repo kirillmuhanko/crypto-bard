@@ -1,5 +1,6 @@
-using CryptoBardWorkerService.Interfaces;
-using CryptoBardWorkerService.Repositories;
+using CryptoBardWorkerService.Commands.Interfaces;
+using CryptoBardWorkerService.Models;
+using CryptoBardWorkerService.Repositories.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -7,9 +8,9 @@ namespace CryptoBardWorkerService.Commands;
 
 public class CommandStart : IBotCommand
 {
-    private readonly IChatIdRepository _chatIdRepository;
+    private readonly IChatRepository _chatIdRepository;
 
-    public CommandStart(IChatIdRepository chatIdRepository)
+    public CommandStart(IChatRepository chatIdRepository)
     {
         _chatIdRepository = chatIdRepository;
     }
@@ -18,12 +19,9 @@ public class CommandStart : IBotCommand
 
     public async Task ExecuteAsync(ITelegramBotClient botClient, Message message)
     {
-        var chatId = message.Chat.Id;
-
-        if (_chatIdRepository.IsChatIdNew(chatId)) 
-            _chatIdRepository.SaveChatId(chatId);
-
+        var chatModel = new ChatModel { ChatId = message.Chat.Id }; 
+        await _chatIdRepository.SaveChatModelAsync(chatModel);
         var responseMessage = $"Welcome, {message.From?.FirstName}!";
-        await botClient.SendTextMessageAsync(chatId, responseMessage);
+        await botClient.SendTextMessageAsync(chatModel.ChatId, responseMessage);
     }
 }

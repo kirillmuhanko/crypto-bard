@@ -1,9 +1,19 @@
-using CryptoBardWorkerService;
-using CryptoBardWorkerService.IoC;
+using CryptoBardWorkerService.Commands;
+using CryptoBardWorkerService.Commands.Interfaces;
+using CryptoBardWorkerService.Detectors;
+using CryptoBardWorkerService.Detectors.Interfaces;
+using CryptoBardWorkerService.Models;
+using CryptoBardWorkerService.Repositories;
+using CryptoBardWorkerService.Repositories.Interfaces;
+using CryptoBardWorkerService.Services;
+using CryptoBardWorkerService.Services.Interfaces;
+using CryptoBardWorkerService.Workers;
+using Microsoft.Extensions.Options;
 using Serilog;
+using Telegram.Bot;
 
 var host = Host.CreateDefaultBuilder(args)
-    .UseSerilogWithConfiguration()
+    .UseSerilog((context, configuration) => { configuration.ReadFrom.Configuration(context.Configuration); })
     .ConfigureAppConfiguration((hostContext, configBuilder) =>
     {
         configBuilder.SetBasePath(hostContext.HostingEnvironment.ContentRootPath)
@@ -12,8 +22,35 @@ var host = Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices((hostContext, services) =>
     {
-        services.AddCustomServices(hostContext.Configuration);
         services.AddHostedService<Worker>();
+        services.Configure<AppSettings>(hostContext.Configuration.GetSection(AppSettings.SectionName));
+
+        services.AddSingleton<ITelegramBotClient>(provider =>
+        {
+            var options = provider.GetRequiredService<IOptions<AppSettings>>().Value;
+            var botClient = new TelegramBotClient(options.TelegramBotToken);
+            var commandHandler = provider.GetRequiredService<ICommandHandler>();
+
+            botClient.StartReceiving(
+                async (bot, update, _) =>
+                {
+                    if (update.Message != null)
+                        await commandHandler.HandleCommandAsync(bot, update.Message);
+                },
+                (_, _, _) => Task.CompletedTask);
+
+            return botClient;
+        });
+
+        services.AddSingleton<IBotCommand, CommandPing>();
+        services.AddSingleton<IBotCommand, CommandStart>();
+        services.AddSingleton<ICommandHandler, CommandHandler>();
+        services.AddSingleton<ICryptocurrencyDataService, CryptocurrencyDataService>();
+        services.AddSingleton<IDateChangeDetector, DateChangeDetector>();
+        services.AddSingleton<IInternetConnectionDetector, InternetConnectionDetector>();
+        services.AddSingleton<IPriceChangeRepository, PriceChangeRepository>();
+        services.AddSingleton<INotificationService, NotificationService>();
+        services.AddSingleton<IChatRepository, ChatRepository>();
     })
     .UseWindowsService()
     .Build();

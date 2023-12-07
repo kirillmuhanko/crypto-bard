@@ -1,17 +1,13 @@
 using System.Net.NetworkInformation;
+using CryptoBardWorkerService.Detectors.Interfaces;
 
-namespace CryptoBardWorkerService.Validators;
+namespace CryptoBardWorkerService.Detectors;
 
-public interface IInternetConnectionValidator
+public class InternetConnectionDetector : IInternetConnectionDetector
 {
-    Task<bool> CheckInternetConnectionAsync();
-}
+    private readonly ILogger<InternetConnectionDetector> _logger;
 
-public class InternetConnectionValidator : IInternetConnectionValidator
-{
-    private readonly ILogger<InternetConnectionValidator> _logger;
-
-    public InternetConnectionValidator(ILogger<InternetConnectionValidator> logger)
+    public InternetConnectionDetector(ILogger<InternetConnectionDetector> logger)
     {
         _logger = logger;
     }

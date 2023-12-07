@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace CryptoBardWorkerService.Options;
+namespace CryptoBardWorkerService.Models;
 
-public class GlobalOptions
+public class AppSettings
 {
     public const string SectionName = "AppSettings";
 

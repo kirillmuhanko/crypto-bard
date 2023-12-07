@@ -1,18 +1,10 @@
-namespace CryptoBardWorkerService.Detectors;
+using CryptoBardWorkerService.Detectors.Interfaces;
 
-public interface IDateChangeDetector
-{
-    bool HasDateChanged();
-}
+namespace CryptoBardWorkerService.Detectors;
 
 public class DateChangeDetector : IDateChangeDetector
 {
-    private DateTime _lastCheckedDate;
-
-    public DateChangeDetector()
-    {
-        _lastCheckedDate = DateTime.UtcNow.Date;
-    }
+    private DateTime _lastCheckedDate = DateTime.UtcNow.Date;
 
     public bool HasDateChanged()
     {

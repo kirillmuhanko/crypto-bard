@@ -1,23 +1,18 @@
 using CryptoBardWorkerService.Models;
-using CryptoBardWorkerService.Options;
+using CryptoBardWorkerService.Services.Interfaces;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
 namespace CryptoBardWorkerService.Services;
 
-public interface ICryptocurrencyDataService
-{
-    Task<List<CryptocurrencyModel>> GetCryptocurrencyDataAsync();
-}
-
 public class CryptocurrencyDataService : ICryptocurrencyDataService
 {
     private readonly ILogger<CryptocurrencyDataService> _logger;
-    private readonly IOptions<GlobalOptions> _options;
+    private readonly IOptions<AppSettings> _options;
 
     public CryptocurrencyDataService(
         ILogger<CryptocurrencyDataService> logger,
-        IOptions<GlobalOptions> options)
+        IOptions<AppSettings> options)
     {
         _logger = logger;
         _options = options;

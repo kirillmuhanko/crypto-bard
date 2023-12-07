@@ -1,4 +1,4 @@
-using CryptoBardWorkerService.Interfaces;
+using CryptoBardWorkerService.Commands.Interfaces;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 

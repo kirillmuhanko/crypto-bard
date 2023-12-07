@@ -1,34 +1,33 @@
-using CryptoBardWorkerService.Detectors;
-using CryptoBardWorkerService.Options;
-using CryptoBardWorkerService.Repositories;
-using CryptoBardWorkerService.Services;
-using CryptoBardWorkerService.Validators;
+using CryptoBardWorkerService.Detectors.Interfaces;
+using CryptoBardWorkerService.Models;
+using CryptoBardWorkerService.Repositories.Interfaces;
+using CryptoBardWorkerService.Services.Interfaces;
 using Microsoft.Extensions.Options;
 
-namespace CryptoBardWorkerService;
+namespace CryptoBardWorkerService.Workers;
 
 public class Worker : BackgroundService
 {
     private readonly ICryptocurrencyDataService _cryptocurrencyDataService;
     private readonly IDateChangeDetector _dateChangeDetector;
-    private readonly IInternetConnectionValidator _internetConnectionValidator;
+    private readonly IInternetConnectionDetector _internetConnectionDetector;
     private readonly ILogger<Worker> _logger;
     private readonly INotificationService _notificationService;
-    private readonly IOptions<GlobalOptions> _options;
+    private readonly IOptions<AppSettings> _options;
     private readonly IPriceChangeRepository _priceChangeRepository;
 
     public Worker(
         ICryptocurrencyDataService cryptocurrencyDataService,
         IDateChangeDetector dateChangeDetector,
-        IInternetConnectionValidator internetConnectionValidator,
+        IInternetConnectionDetector internetConnectionDetector,
         ILogger<Worker> logger,
         INotificationService notificationService,
-        IOptions<GlobalOptions> options,
+        IOptions<AppSettings> options,
         IPriceChangeRepository priceChangeRepository)
     {
         _cryptocurrencyDataService = cryptocurrencyDataService;
         _dateChangeDetector = dateChangeDetector;
-        _internetConnectionValidator = internetConnectionValidator;
+        _internetConnectionDetector = internetConnectionDetector;
         _logger = logger;
         _options = options;
         _notificationService = notificationService;
@@ -44,7 +43,7 @@ public class Worker : BackgroundService
         {
             try
             {
-                if (!await _internetConnectionValidator.CheckInternetConnectionAsync())
+                if (!await _internetConnectionDetector.CheckInternetConnectionAsync())
                     continue;
 
                 await ProcessAsync();
