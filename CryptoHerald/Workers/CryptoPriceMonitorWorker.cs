@@ -1,8 +1,6 @@
 using CryptoHerald.Detectors.Interfaces;
-using CryptoHerald.Models;
 using CryptoHerald.Repositories.Interfaces;
 using CryptoHerald.Services.Interfaces;
-using Microsoft.Extensions.Options;
 
 namespace CryptoHerald.Workers;
 
@@ -13,7 +11,6 @@ public class CryptoPriceMonitorWorker : BackgroundService
     private readonly IInternetConnectionDetector _internetConnectionDetector;
     private readonly ILogger<CryptoPriceMonitorWorker> _logger;
     private readonly INotificationService _notificationService;
-    private readonly IOptions<CryptoAnalysisOptions> _options;
     private readonly IPriceChangeRepository _priceChangeRepository;
 
     public CryptoPriceMonitorWorker(
@@ -22,14 +19,12 @@ public class CryptoPriceMonitorWorker : BackgroundService
         IInternetConnectionDetector internetConnectionDetector,
         ILogger<CryptoPriceMonitorWorker> logger,
         INotificationService notificationService,
-        IOptions<CryptoAnalysisOptions> options,
         IPriceChangeRepository priceChangeRepository)
     {
         _cryptoService = cryptoService;
         _dateChangeDetector = dateChangeDetector;
         _internetConnectionDetector = internetConnectionDetector;
         _logger = logger;
-        _options = options;
         _notificationService = notificationService;
         _priceChangeRepository = priceChangeRepository;
         _notificationService = notificationService;
