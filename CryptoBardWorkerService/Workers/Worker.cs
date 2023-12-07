@@ -8,24 +8,24 @@ namespace CryptoBardWorkerService.Workers;
 
 public class Worker : BackgroundService
 {
-    private readonly ICryptocurrencyDataService _cryptocurrencyDataService;
+    private readonly ICryptoService _cryptoService;
     private readonly IDateChangeDetector _dateChangeDetector;
     private readonly IInternetConnectionDetector _internetConnectionDetector;
     private readonly ILogger<Worker> _logger;
     private readonly INotificationService _notificationService;
-    private readonly IOptions<AppSettings> _options;
+    private readonly IOptions<CryptoAnalysisOptions> _options;
     private readonly IPriceChangeRepository _priceChangeRepository;
 
     public Worker(
-        ICryptocurrencyDataService cryptocurrencyDataService,
+        ICryptoService cryptoService,
         IDateChangeDetector dateChangeDetector,
         IInternetConnectionDetector internetConnectionDetector,
         ILogger<Worker> logger,
         INotificationService notificationService,
-        IOptions<AppSettings> options,
+        IOptions<CryptoAnalysisOptions> options,
         IPriceChangeRepository priceChangeRepository)
     {
-        _cryptocurrencyDataService = cryptocurrencyDataService;
+        _cryptoService = cryptoService;
         _dateChangeDetector = dateChangeDetector;
         _internetConnectionDetector = internetConnectionDetector;
         _logger = logger;
@@ -66,7 +66,7 @@ public class Worker : BackgroundService
             _priceChangeRepository.ClearAll();
         }
 
-        var models = await _cryptocurrencyDataService.GetCryptocurrencyDataAsync();
+        var models = await _cryptoService.GetCryptocurrencyDataAsync();
 
         foreach (var model in models)
         {

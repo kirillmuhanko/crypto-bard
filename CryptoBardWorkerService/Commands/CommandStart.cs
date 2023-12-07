@@ -8,20 +8,30 @@ namespace CryptoBardWorkerService.Commands;
 
 public class CommandStart : IBotCommand
 {
-    private readonly IChatRepository _chatIdRepository;
+    private readonly IUserRepository _userRepository;
 
-    public CommandStart(IChatRepository chatIdRepository)
+    public CommandStart(IUserRepository userRepository)
     {
-        _chatIdRepository = chatIdRepository;
+        _userRepository = userRepository;
     }
 
     public string Name => "/start";
 
     public async Task ExecuteAsync(ITelegramBotClient botClient, Message message)
     {
-        var chatModel = new ChatModel { ChatId = message.Chat.Id }; 
-        await _chatIdRepository.SaveChatModelAsync(chatModel);
+        var fromUser = message.From ?? new User();
+
+        var userModel = new UserModel
+        {
+            ChatId = message.Chat.Id,
+            UserId = fromUser.Id,
+            Username = fromUser.Username,
+            FirstName = fromUser.FirstName,
+            LastName = fromUser.LastName
+        };
+
+        await _userRepository.AddUserAsync(userModel);
         var responseMessage = $"Welcome, {message.From?.FirstName}!";
-        await botClient.SendTextMessageAsync(chatModel.ChatId, responseMessage);
+        await botClient.SendTextMessageAsync(userModel.ChatId, responseMessage);
     }
 }

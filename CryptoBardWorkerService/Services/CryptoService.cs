@@ -5,22 +5,22 @@ using Newtonsoft.Json;
 
 namespace CryptoBardWorkerService.Services;
 
-public class CryptocurrencyDataService : ICryptocurrencyDataService
+public class CryptoService : ICryptoService
 {
-    private readonly ILogger<CryptocurrencyDataService> _logger;
-    private readonly IOptions<AppSettings> _options;
+    private readonly ILogger<CryptoService> _logger;
+    private readonly IOptions<CryptoAnalysisOptions> _options;
 
-    public CryptocurrencyDataService(
-        ILogger<CryptocurrencyDataService> logger,
-        IOptions<AppSettings> options)
+    public CryptoService(
+        ILogger<CryptoService> logger,
+        IOptions<CryptoAnalysisOptions> options)
     {
         _logger = logger;
         _options = options;
     }
 
-    public async Task<List<CryptocurrencyModel>> GetCryptocurrencyDataAsync()
+    public async Task<List<CryptoTicker24HrModel>> GetCryptocurrencyDataAsync()
     {
-        var cryptoDataList = new List<CryptocurrencyModel>();
+        var cryptoDataList = new List<CryptoTicker24HrModel>();
         using var client = new HttpClient();
 
         foreach (var symbol in _options.Value.Cryptocurrencies)
@@ -32,7 +32,7 @@ public class CryptocurrencyDataService : ICryptocurrencyDataService
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    var data = JsonConvert.DeserializeObject<CryptocurrencyModel>(json);
+                    var data = JsonConvert.DeserializeObject<CryptoTicker24HrModel>(json);
 
                     if (data != null)
                         cryptoDataList.Add(data);

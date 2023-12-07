@@ -2,9 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CryptoBardWorkerService.Models;
 
-public class AppSettings
+public class CryptoAnalysisOptions
 {
-    public const string SectionName = "AppSettings";
+    public const string ConfigurationSectionName = "AppSettings";
 
     [Required(ErrorMessage = "The BinanceTicker24HrApiUrl is required.")]
     [Url(ErrorMessage = "The BinanceTicker24HrApiUrl must be a valid URL.")]

@@ -23,11 +23,11 @@ var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
         services.AddHostedService<Worker>();
-        services.Configure<AppSettings>(hostContext.Configuration.GetSection(AppSettings.SectionName));
+        services.Configure<CryptoAnalysisOptions>(hostContext.Configuration.GetSection(CryptoAnalysisOptions.ConfigurationSectionName));
 
         services.AddSingleton<ITelegramBotClient>(provider =>
         {
-            var options = provider.GetRequiredService<IOptions<AppSettings>>().Value;
+            var options = provider.GetRequiredService<IOptions<CryptoAnalysisOptions>>().Value;
             var botClient = new TelegramBotClient(options.TelegramBotToken);
             var commandHandler = provider.GetRequiredService<ICommandHandler>();
 
@@ -45,12 +45,12 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<IBotCommand, CommandPing>();
         services.AddSingleton<IBotCommand, CommandStart>();
         services.AddSingleton<ICommandHandler, CommandHandler>();
-        services.AddSingleton<ICryptocurrencyDataService, CryptocurrencyDataService>();
+        services.AddSingleton<ICryptoService, CryptoService>();
         services.AddSingleton<IDateChangeDetector, DateChangeDetector>();
         services.AddSingleton<IInternetConnectionDetector, InternetConnectionDetector>();
         services.AddSingleton<IPriceChangeRepository, PriceChangeRepository>();
         services.AddSingleton<INotificationService, NotificationService>();
-        services.AddSingleton<IChatRepository, ChatRepository>();
+        services.AddSingleton<IUserRepository, UserRepository>();
     })
     .UseWindowsService()
     .Build();

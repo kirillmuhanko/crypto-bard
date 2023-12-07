@@ -7,16 +7,16 @@ namespace CryptoBardWorkerService.Services;
 
 public class NotificationService : INotificationService
 {
-    private readonly IChatRepository _chatRepository;
     private readonly ILogger<NotificationService> _logger;
     private readonly ITelegramBotClient _telegramBotClient;
+    private readonly IUserRepository _userRepository;
 
     public NotificationService(
-        IChatRepository chatRepository,
+        IUserRepository userRepository,
         ILogger<NotificationService> logger,
         ITelegramBotClient telegramBotClient)
     {
-        _chatRepository = chatRepository;
+        _userRepository = userRepository;
         _logger = logger;
         _telegramBotClient = telegramBotClient;
     }
@@ -52,9 +52,9 @@ public class NotificationService : INotificationService
 
     private async Task NotifyUsersInTelegram(string message)
     {
-        var chatListModel = await _chatRepository.LoadChatListModelAsync();
+        var userDataModel = await _userRepository.GetUserDataAsync();
 
-        foreach (var chatModel in chatListModel.Chats)
+        foreach (var chatModel in userDataModel.Users)
             await _telegramBotClient.SendTextMessageAsync(chatModel.ChatId, message, cancellationToken: default);
     }
 }
