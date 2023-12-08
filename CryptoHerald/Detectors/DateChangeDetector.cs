@@ -14,7 +14,6 @@ public class DateChangeDetector : IDateChangeDetector
             return false;
 
         _lastCheckedDate = currentDate;
-
         return true;
     }
 }

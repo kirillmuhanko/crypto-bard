@@ -58,18 +58,18 @@ public class CryptoPriceMonitorWorker : BackgroundService
         if (_dateChangeDetector.HasDateChanged())
         {
             _logger.LogInformation("A new day has begun! Resetting the dictionary...");
-            _priceChangeRepository.ClearAll();
+            _priceChangeRepository.ClearAllPriceChangePercentages();
         }
 
         var models = await _cryptoService.GetCryptocurrencyDataAsync();
 
         foreach (var model in models)
         {
-            if (_priceChangeRepository.IsPriceChanged(model.Symbol, model.PriceChangePercent))
+            if (_priceChangeRepository.IsPriceSignificantlyChanged(model.Symbol, model.PriceChangePercent))
             {
                 var message = $"{model.Symbol} has risen by {model.PriceChangePercent:F2}% in the last 24 hours!";
                 await _notificationService.Notify(message);
-                _priceChangeRepository.UpdateLastPriceChangePercentage(model.Symbol, model.PriceChangePercent);
+                _priceChangeRepository.UpdateLatestPriceChangePercentage(model.Symbol, model.PriceChangePercent);
 
                 _logger.LogInformation(
                     $"{model.Symbol} has witnessed a significant increase of {model.PriceChangePercent:F2}% in the past day!");

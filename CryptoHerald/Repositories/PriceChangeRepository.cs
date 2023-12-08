@@ -6,39 +6,37 @@ namespace CryptoHerald.Repositories;
 
 public class PriceChangeRepository : IPriceChangeRepository
 {
-    private readonly Dictionary<string, decimal> _lastPriceChangePercentages = new();
     private readonly IOptions<CryptoAnalysisOptions> _options;
+    private readonly Dictionary<string, decimal> _priceChangePercentages = new();
 
     public PriceChangeRepository(IOptions<CryptoAnalysisOptions> options)
     {
         _options = options;
     }
 
-    public decimal GetLastPriceChangePercentage(string symbol)
+    public decimal GetLatestPriceChangePercentage(string cryptocurrencySymbol)
     {
-        _lastPriceChangePercentages.TryGetValue(symbol, out var lastPriceChangePercentage);
+        _priceChangePercentages.TryGetValue(cryptocurrencySymbol, out var lastPriceChangePercentage);
         return lastPriceChangePercentage;
     }
 
-    public void UpdateLastPriceChangePercentage(string symbol, decimal priceChangePercentage)
+    public bool IsPriceSignificantlyChanged(string cryptocurrencySymbol, decimal priceChangePercent)
     {
-        _lastPriceChangePercentages[symbol] = priceChangePercentage;
+        var latestPriceChangePercentage = GetLatestPriceChangePercentage(cryptocurrencySymbol);
+        var priceChangeDifference = priceChangePercent - latestPriceChangePercentage;
+        var priceChangeThresholdMet = priceChangePercent >= _options.Value.PriceChangedThresholdPercent;
+        var minimumPriceChangeThresholdMet =
+            priceChangeDifference >= _options.Value.MinimumPriceChangeForNotificationPercent;
+        return priceChangeThresholdMet && minimumPriceChangeThresholdMet;
     }
 
-    public void ClearAll()
+    public void UpdateLatestPriceChangePercentage(string cryptocurrencySymbol, decimal priceChangePercentage)
     {
-        _lastPriceChangePercentages.Clear();
+        _priceChangePercentages[cryptocurrencySymbol] = priceChangePercentage;
     }
 
-    public bool IsPriceChanged(string symbol, decimal priceChangePercent)
+    public void ClearAllPriceChangePercentages()
     {
-        var lastPriceChangePercentage = GetLastPriceChangePercentage(symbol);
-        var percentDifference = priceChangePercent - lastPriceChangePercentage;
-
-        var result =
-            priceChangePercent >= _options.Value.PriceChangedPercent &&
-            percentDifference > _options.Value.MinPercentDifferenceForNotification;
-
-        return result;
+        _priceChangePercentages.Clear();
     }
 }
