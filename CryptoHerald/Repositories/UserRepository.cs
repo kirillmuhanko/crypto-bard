@@ -9,6 +9,11 @@ public class UserRepository : IUserRepository
     private readonly string _filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "users.json");
     private UserDataModel? _cachedUserDataModel;
 
+    public async Task<UserDataModel> GetUserDataAsync()
+    {
+        return _cachedUserDataModel ??= await LoadUserDataModelFromFileAsync();
+    }
+
     public async Task AddUserAsync(UserModel userModel)
     {
         userModel.CreatedAt ??= DateTime.UtcNow;
@@ -22,17 +27,6 @@ public class UserRepository : IUserRepository
         _cachedUserDataModel = userDataModel;
     }
 
-    public async Task<UserDataModel> GetUserDataAsync()
-    {
-        return _cachedUserDataModel ??= await LoadUserDataModelFromFileAsync();
-    }
-
-    private async Task SaveUserDataToFileAsync(UserDataModel userDataModel)
-    {
-        await using var fileStream = File.Create(_filePath);
-        await JsonSerializer.SerializeAsync(fileStream, userDataModel);
-    }
-
     private async Task<UserDataModel> LoadUserDataModelFromFileAsync()
     {
         if (!File.Exists(_filePath))
@@ -40,6 +34,12 @@ public class UserRepository : IUserRepository
 
         await using var fileStream = File.OpenRead(_filePath);
         return await JsonSerializer.DeserializeAsync<UserDataModel>(fileStream) ?? new UserDataModel();
+    }
+
+    private async Task SaveUserDataToFileAsync(UserDataModel userDataModel)
+    {
+        await using var fileStream = File.Create(_filePath);
+        await JsonSerializer.SerializeAsync(fileStream, userDataModel);
     }
 
     private static bool UserExists(UserDataModel userDataModel, long chatId)

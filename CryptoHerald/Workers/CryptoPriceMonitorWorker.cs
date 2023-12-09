@@ -6,28 +6,28 @@ namespace CryptoHerald.Workers;
 
 public class CryptoPriceMonitorWorker : BackgroundService
 {
-    private readonly ICryptoService _cryptoService;
+    private readonly ICryptoDataFetcherService _cryptoDataFetcherService;
     private readonly IDateChangeDetector _dateChangeDetector;
     private readonly IInternetConnectionDetector _internetConnectionDetector;
     private readonly ILogger<CryptoPriceMonitorWorker> _logger;
-    private readonly INotificationService _notificationService;
+    private readonly IUserNotificationService _userNotificationService;
     private readonly IPriceChangeRepository _priceChangeRepository;
 
     public CryptoPriceMonitorWorker(
-        ICryptoService cryptoService,
+        ICryptoDataFetcherService cryptoDataFetcherService,
         IDateChangeDetector dateChangeDetector,
         IInternetConnectionDetector internetConnectionDetector,
         ILogger<CryptoPriceMonitorWorker> logger,
-        INotificationService notificationService,
+        IUserNotificationService userNotificationService,
         IPriceChangeRepository priceChangeRepository)
     {
-        _cryptoService = cryptoService;
+        _cryptoDataFetcherService = cryptoDataFetcherService;
         _dateChangeDetector = dateChangeDetector;
         _internetConnectionDetector = internetConnectionDetector;
         _logger = logger;
-        _notificationService = notificationService;
+        _userNotificationService = userNotificationService;
         _priceChangeRepository = priceChangeRepository;
-        _notificationService = notificationService;
+        _userNotificationService = userNotificationService;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -61,14 +61,14 @@ public class CryptoPriceMonitorWorker : BackgroundService
             _priceChangeRepository.ClearAllPriceChangePercentages();
         }
 
-        var models = await _cryptoService.GetCryptocurrencyDataAsync();
+        var models = await _cryptoDataFetcherService.RetrieveCryptocurrencyDataAsync();
 
         foreach (var model in models)
         {
             if (_priceChangeRepository.IsPriceSignificantlyChanged(model.Symbol, model.PriceChangePercent))
             {
                 var message = $"{model.Symbol} has risen by {model.PriceChangePercent:F2}% in the last 24 hours!";
-                await _notificationService.Notify(message);
+                await _userNotificationService.NotifyUsers(message);
                 _priceChangeRepository.UpdateLatestPriceChangePercentage(model.Symbol, model.PriceChangePercent);
 
                 _logger.LogInformation(

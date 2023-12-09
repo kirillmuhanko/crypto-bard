@@ -52,11 +52,11 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddSingleton<IBotCommand, CommandPing>();
         services.AddSingleton<IBotCommand, CommandStart>();
         services.AddSingleton<ICommandHandler, CommandHandler>();
-        services.AddSingleton<ICryptoService, CryptoService>();
+        services.AddSingleton<ICryptoDataFetcherService, CryptoDataFetcherService>();
         services.AddSingleton<IDateChangeDetector, DateChangeDetector>();
         services.AddSingleton<IInternetConnectionDetector, InternetConnectionDetector>();
         services.AddSingleton<IPriceChangeRepository, PriceChangeRepository>();
-        services.AddSingleton<INotificationService, NotificationService>();
+        services.AddSingleton<IUserNotificationService, UserNotificationService>();
         services.AddSingleton<IUserRepository, UserRepository>();
     })
     .UseSerilog((context, configuration) => { configuration.ReadFrom.Configuration(context.Configuration); })
