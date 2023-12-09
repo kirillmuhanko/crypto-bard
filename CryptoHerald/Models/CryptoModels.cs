@@ -2,7 +2,7 @@ namespace CryptoHerald.Models;
 
 public class CryptoTicker24HrResponseModel
 {
-    public string Symbol { get; set; } = null!;
+    public string Symbol { get; set; } = default!;
 
     public decimal PriceChangePercent { get; set; }
 }
