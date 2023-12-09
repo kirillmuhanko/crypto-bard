@@ -23,14 +23,14 @@ public class CryptoDataFetcherService : ICryptoDataFetcherService
         var cryptocurrencyDataList = new List<CryptoTicker24HrResponseModel>();
         using var client = new HttpClient();
 
-        foreach (var cryptocurrencySymbol in _options.Value.Cryptocurrencies)
+        foreach (var symbol in _options.Value.BinanceCryptoSymbols)
         {
-            var cryptoTickerData = await FetchCryptoTickerDataAsync(cryptocurrencySymbol, client);
+            var cryptoTickerData = await FetchCryptoTickerDataAsync(symbol, client);
 
             if (cryptoTickerData != null)
                 cryptocurrencyDataList.Add(cryptoTickerData);
             else
-                _logger.LogError($"Failed to fetch data for {cryptocurrencySymbol}.");
+                _logger.LogError($"Failed to fetch data for {symbol}.");
         }
 
         cryptocurrencyDataList = cryptocurrencyDataList
