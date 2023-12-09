@@ -17,6 +17,7 @@ var host = Host.CreateDefaultBuilder(args)
         configBuilder
             .SetBasePath(hostContext.HostingEnvironment.ContentRootPath)
             .AddJsonFile("appsettings.json", true, true)
+            .AddJsonFile($"appsettings.{hostContext.HostingEnvironment.EnvironmentName}.json", true, true)
             .AddEnvironmentVariables("CryptoHerald__");
     })
     .ConfigureServices((hostContext, services) =>
@@ -69,9 +70,6 @@ try
 }
 catch (Exception ex)
 {
-    Log.Error(ex, "An unhandled exception occurred.");
-}
-finally
-{
-    Log.CloseAndFlush();
+    var logger = host.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogCritical(ex, "An unhandled exception occurred.");
 }
