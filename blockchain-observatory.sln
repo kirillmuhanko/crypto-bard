@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptoHerald", "CryptoHerald\CryptoHerald.csproj", "{B164ED41-7A19-4E69-AD35-02048AB05232}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockchainObservatory.WorkerService", "BlockchainObservatory.WorkerService\BlockchainObservatory.WorkerService.csproj", "{B164ED41-7A19-4E69-AD35-02048AB05232}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
