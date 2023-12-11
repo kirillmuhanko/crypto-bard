@@ -65,36 +65,33 @@ public class CryptoPriceWatchman : BackgroundService
         _logger.LogInformation("CryptoPriceWatchman, having completed its duty, bids farewell.");
     }
 
+
     private async Task MonitorCryptoMarketAsync()
     {
-        _logger.LogInformation("CryptoPriceWatchman, with piercing eyes, detects a change in the temporal fabric.");
         if (_dateChangeDetector.HasDateChanged())
         {
-            _logger.LogInformation("CryptoPriceWatchman, with meticulous precision, resets the price change records.");
+            _logger.LogInformation(
+                "CryptoPriceWatchman detects a temporal shift! Resetting the scrolls of price change records.");
             _priceChangeRepository.ClearAllPriceChangePercentages();
         }
 
-        _logger.LogInformation(
-            "CryptoPriceWatchman, with unwavering dedication, plunges into the vast sea of cryptocurrency data.");
-        var models = await _cryptoPriceFetcherService.FetchLatestCryptocurrencyDataAsync();
+        var marketData = await _cryptoPriceFetcherService.FetchLatestCryptocurrencyDataAsync();
 
-        _logger.LogInformation("CryptoPriceWatchman, with eagle-eyed scrutiny, scans the retrieved data.");
-        foreach (var model in models)
+        foreach (var data in marketData)
         {
-            _logger.LogInformation(
-                $"CryptoPriceWatchman, with heightened senses, identifies a noteworthy price movement: {model.Symbol} has undergone a remarkable ({model.PriceChangePercent:F2}%) alteration in the past 24 hours.");
-            if (_priceChangeRepository.IsPriceSignificantlyChanged(model.Symbol, model.PriceChangePercent))
+            var priceChangeMessage = $"{data.Symbol} has shifted by {data.PriceChangePercent:F2}%";
+
+            if (_priceChangeRepository.IsPriceSignificantlyChanged(data.Symbol, data.PriceChangePercent))
             {
                 _logger.LogInformation(
-                    $"CryptoPriceWatchman, with unwavering loyalty, alerts the concerned individuals: {model.Symbol} has surged by {model.PriceChangePercent:F2}%! Stay vigilant, crypto enthusiasts!");
-                await _userNotificationService.NotifyUsers(
-                    $"{model.Symbol} has risen by {model.PriceChangePercent:F2}% in the last 24 hours!");
-                _priceChangeRepository.UpdateLatestPriceChangePercentage(model.Symbol, model.PriceChangePercent);
+                    $"CryptoPriceWatchman raises the alarm! {priceChangeMessage} - A seismic crypto shift!");
+                await _userNotificationService.NotifyUsers($"🚨 Attention! {priceChangeMessage} 🚨");
+                _priceChangeRepository.UpdateLatestPriceChangePercentage(data.Symbol, data.PriceChangePercent);
             }
             else
             {
                 _logger.LogInformation(
-                    $"CryptoPriceWatchman, with a reassuring tone, informs the community: {model.Symbol}'s price change of {model.PriceChangePercent:F2}% doesn't warrant an immediate attention, yet.");
+                    $"CryptoPriceWatchman observes serenely: {priceChangeMessage} - All quiet on the crypto front.");
             }
         }
     }
